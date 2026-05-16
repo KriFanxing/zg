@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>视频自动播放</title>
+  <style>
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+    video { width: 100vw; height: 100vh; object-fit: contain; background: #000; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <video id="player" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture>
+    <source src="./mmexport1778924207800.mp4" type="video/mp4" />
+  </video>
+
+  <!-- 用单独 audio 承担后台连续播放（部分移动端对 audio 后台策略更宽松） -->
+  <audio id="bgAudio" autoplay muted loop preload="auto">
+    <source src="./mmexport1778924207800.mp4" type="audio/mp4" />
+  </audio>
+
+  <script>
+    const player = document.getElementById('player');
+    const bgAudio = document.getElementById('bgAudio');
+
+    async function safePlay(media) {
+      try { await media.play(); } catch (_) {}
+    }
+
+    async function ensurePlaying() {
+      await Promise.all([safePlay(player), safePlay(bgAudio)]);
+    }
+
+    function syncVideoToAudio() {
+      if (Number.isFinite(bgAudio.currentTime) && Math.abs(player.currentTime - bgAudio.currentTime) > 0.35) {
+        player.currentTime = bgAudio.currentTime;
+      }
+    }
+
+    ensurePlaying();
+
+    // 前后台切换时：后台优先让 audio 继续；回前台后恢复 video 并对齐时间
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'hidden') {
+        await safePlay(bgAudio);
+      } else {
+        syncVideoToAudio();
+        await Promise.all([safePlay(bgAudio), safePlay(player)]);
+      }
+    });
+
+    // 某些浏览器会在 pagehide/freeze 时暂停媒体，定时轻量兜底
+    setInterval(() => {
+      if (document.visibilityState === 'hidden' && bgAudio.paused) {
+        safePlay(bgAudio);
+      } else if (document.visibilityState === 'visible' && player.paused) {
+        safePlay(player);
+      }
+    }, 1500);
+
+    // 屏蔽常见暂停快捷键
+    window.addEventListener('keydown', (e) => {
+      const key = (e.key || '').toLowerCase();
+      if (e.code === 'Space' || key === 'k' || key === 'mediaPlayPause') e.preventDefault();
+    }, { passive: false });
+  </script>
+</body>
+</html>
