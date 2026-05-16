@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>视频自动播放</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      background: #000;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <video
+    id="player"
+    autoplay
+    muted
+    loop
+    playsinline
+    webkit-playsinline
+    preload="auto"
+    disablepictureinpicture
+    controlslist="nodownload noplaybackrate noremoteplayback nofullscreen"
+  >
+    <source src="./mmexport1778924207800.mp4" type="video/mp4" />
+  </video>
+
+  <script>
+    const player = document.getElementById('player');
+
+    async function ensurePlaying() {
+      try {
+        await player.play();
+      } catch (e) {
+        // 浏览器策略可能阻止自动播放；保持静默重试
+      }
+    }
+
+    ensurePlaying();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        // 某些浏览器在切到后台会暂停；尝试保持播放
+        player.play().catch(() => {});
+      } else if (player.paused) {
+        player.play().catch(() => {});
+      }
+    });
+
+    // 禁止用户通过快捷键暂停/播放
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // 防止意外点击触发交互控件
+    player.addEventListener('click', (e) => e.preventDefault());
+  </script>
+</body>
+</html>
