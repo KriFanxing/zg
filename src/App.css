@@ -243,6 +243,141 @@ body {
 .status-card.status_report       { border-left-color: #a78bfa; }
 .status-card.status_done         { border-left-color: #10b981; }
 
+/* ─── Collapsible Panel (Right Sidebar) ─────────────────────── */
+.panel-wrapper {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  pointer-events: none;
+}
+
+/* The toggle button strip on the left edge of the panel */
+.panel-toggle {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.pt-btn {
+  width: 36px;
+  height: 80px;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 10px 0 0 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 1px;
+  box-shadow: -3px 0 12px rgba(0,0,0,0.4);
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.pt-btn:hover { background: #2d2d5a; }
+
+/* The panel body — slides in/out */
+.panel-body {
+  width: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  border-radius: 14px 0 0 14px;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.panel-wrapper.panel-open .panel-body {
+  width: 300px;
+}
+
+/* Panel header */
+.panel-hdr {
+  display: none;
+  padding: 14px 16px 10px;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.panel-wrapper.panel-open .panel-hdr { display: flex; flex-direction: column; gap: 2px; }
+.ph-title { font-size: 15px; font-weight: 800; color: #fff; }
+.ph-sub { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+/* Panel tabs */
+.panel-tabs { display: none; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+.panel-wrapper.panel-open .panel-tabs { display: flex; }
+
+.pt-tab {
+  flex: 1; padding: 10px 8px;
+  background: rgba(255,255,255,0.05); border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5);
+  transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.pt-tab.active { background: rgba(255,255,255,0.1); color: #fff; border-bottom-color: #fff; }
+.pt-tab:hover:not(.active) { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+.tab-badge { background: #FF4757; color: white; font-size: 10px; padding: 1px 5px; border-radius: 10px; font-weight: 700; }
+
+/* Panel scroll / sections */
+.panel-scroll { display: none; flex: 1; overflow-y: auto; padding: 12px; flex-direction: column; gap: 4px; }
+.panel-wrapper.panel-open .panel-scroll { display: flex; }
+
+.cp-section { display: none; padding: 10px 0; flex-direction: column; gap: 10px; }
+.panel-wrapper.panel-open .cp-section { display: flex; }
+
+/* Form elements inside panel */
+.cp-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.cp-textarea {
+  width: 100%; resize: none; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px;
+  padding: 10px 12px; font-size: 13px; font-family: inherit; line-height: 1.5;
+  color: #fff; background: rgba(255,255,255,0.07); transition: border-color 0.2s;
+  min-height: 80px;
+}
+.cp-textarea:focus { outline: none; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); }
+.cp-textarea::placeholder { color: rgba(255,255,255,0.3); }
+
+.cp-file-wrap { display: flex; align-items: center; gap: 8px; }
+.cp-btn-secondary {
+  padding: 8px 14px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
+  border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; font-size: 12px;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.cp-btn-secondary:hover { border-color: rgba(255,255,255,0.3); color: #fff; background: rgba(255,255,255,0.12); }
+.cp-filename { font-size: 12px; color: rgba(255,255,255,0.6); }
+
+.cp-preview { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; }
+.cp-preview-content { font-size: 11px; color: rgba(255,255,255,0.6); white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+
+.cp-btn-primary {
+  width: 100%; padding: 11px; background: #4a9eff; color: #fff; border: none;
+  border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background 0.2s; font-family: inherit;
+}
+.cp-btn-primary:hover:not(:disabled) { background: #3a8eef; }
+.cp-btn-primary:disabled { background: rgba(74,158,255,0.3); cursor: not-allowed; }
+
+.cp-btn-row { display: flex; gap: 8px; margin-top: 4px; }
+
+.cp-empty { text-align: center; color: rgba(255,255,255,0.3); font-size: 13px; padding: 30px 0; }
+
+.cp-history-list { display: flex; flex-direction: column; gap: 8px; }
+.cp-history-item { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 12px; }
+.cp-history-ts { font-size: 10px; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
+.cp-history-text { font-size: 13px; color: rgba(255,255,255,0.8); }
+
 /* ─── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .status-grid { grid-template-columns: repeat(2, 1fr); }
