@@ -16,10 +16,10 @@ interface AgentConfig {
 interface TaskEntry { id: number; text: string; ts: string; }
 
 const AGENTS: Record<AgentId, AgentConfig> = {
-  1: { name: '小搜', deskX: '14%', deskY: '45%', fur: '#E8E8E8', innerEar: '#FFB8B8', nose: '#FF9B9B' },
-  2: { name: '小研', deskX: '14%', deskY: '64%', fur: '#8B5CF6', innerEar: '#C4B5FD', nose: '#D8B4FE' },
-  3: { name: '小写', deskX: '86%', deskY: '45%', fur: '#FBBF24', innerEar: '#FDE68A', nose: '#F59E0B' },
-  4: { name: '小审', deskX: '86%', deskY: '64%', fur: '#1A1A1A', innerEar: '#555555', nose: '#666666' },
+  1: { name: '小搜', deskX: '14%', deskY: '44%', fur: '#E8E8E8', innerEar: '#FFB8B8', nose: '#FF9B9B' },
+  2: { name: '小研', deskX: '14%', deskY: '72%', fur: '#8B5CF6', innerEar: '#C4B5FD', nose: '#D8B4FE' },
+  3: { name: '小写', deskX: '86%', deskY: '44%', fur: '#FBBF24', innerEar: '#FDE68A', nose: '#F59E0B' },
+  4: { name: '小审', deskX: '86%', deskY: '72%', fur: '#1A1A1A', innerEar: '#555555', nose: '#666666' },
 };
 
 const BOSS_POS = { left: '50%', top: '24%' };
@@ -31,18 +31,8 @@ const STATE_LABELS: Record<AgentState, string> = {
   work: '工作中', report: '提交结果', done: '已完成',
 };
 
-const STATE_ICONS: Record<AgentState, string> = {
-  idle: '💤', 'walk-to-boss': '🚶', 'at-boss': '📋', 'walk-to-desk': '🚶',
-  work: '💻', report: '📤', done: '✅',
-};
-
-const STATE_COLORS: Record<AgentState, string> = {
-  idle: '#aaa', 'walk-to-boss': '#60a5fa', 'at-boss': '#f59e0b', 'walk-to-desk': '#60a5fa',
-  work: '#34d399', report: '#a78bfa', done: '#10b981',
-};
-
-const WORK_MS  = 2800;
-const REPORT_MS = 2200;
+const WORK_MS   = 2800;
+const REPORT_MS  = 2200;
 const PAUSE_MS  = 700;
 
 // ─── Cat SVG ─────────────────────────────────────────────────────────────────
@@ -53,6 +43,7 @@ const CatSVG: React.FC<CatSVGProps> = ({ fur, innerEar, nose, crown, small }) =>
   const s = small ? 0.6 : 1;
   return (
     <svg viewBox="0 0 100 100" style={{ width: `${80 * s}px`, height: `${80 * s}px` }} overflow="visible">
+      {/* Crown */ }
       {crown && (
         <g>
           <polygon points="50,2 44,18 35,12 42,28 58,28 65,12 56,18" fill="#FFD700" stroke="#DAA520" strokeWidth="1"/>
@@ -61,23 +52,32 @@ const CatSVG: React.FC<CatSVGProps> = ({ fur, innerEar, nose, crown, small }) =>
           <circle cx="58" cy="12" r="2" fill="#FFD700" stroke="#DAA520" strokeWidth="0.5"/>
         </g>
       )}
+      {/* Body */ }
       <ellipse cx="50" cy="72" rx="22" ry="18" fill={fur} stroke={fur} strokeWidth="2"/>
+      {/* Tail */}
       <path d="M 68 72 Q 88 60 82 45" fill="none" stroke={fur} strokeWidth="6" strokeLinecap="round"/>
+      {/* Head */}
       <circle cx="50" cy="48" r="22" fill={fur} stroke={fur} strokeWidth="2"/>
-      <polygon points="32,32 28,14 42,28"  fill={fur}/>
-      <polygon points="68,32 72,14 58,28"  fill={fur}/>
+      {/* Ears */}
+      <polygon points="32,32 28,14 42,28"  fill={fur} stroke={fur} strokeWidth="1"/>
+      <polygon points="68,32 72,14 58,28"  fill={fur} stroke={fur} strokeWidth="1"/>
       <polygon points="32,32 28,14 42,28"  fill={innerEar} opacity="0.8"/>
       <polygon points="68,32 72,14 58,28"  fill={innerEar} opacity="0.8"/>
+      {/* Eyes */}
       <ellipse cx="41" cy="45" rx="5" ry="6" fill="#222"/>
       <ellipse cx="59" cy="45" rx="5" ry="6" fill="#222"/>
       <ellipse cx="41" cy="44" rx="2" ry="3" fill="#fff" opacity="0.9"/>
       <ellipse cx="59" cy="44" rx="2" ry="3" fill="#fff" opacity="0.9"/>
+      {/* Nose */}
       <ellipse cx="50" cy="54" rx="4" ry="3" fill={nose}/>
+      {/* Mouth */}
       <path d="M 46 58 Q 50 62 54 58" fill="none" stroke={nose} strokeWidth="1.5" strokeLinecap="round"/>
+      {/* Whiskers */}
       <line x1="20" y1="50" x2="38" y2="52" stroke="#ccc" strokeWidth="0.8" opacity="0.7"/>
       <line x1="20" y1="55" x2="38" y2="55" stroke="#ccc" strokeWidth="0.8" opacity="0.7"/>
       <line x1="62" y1="52" x2="80" y2="50" stroke="#ccc" strokeWidth="0.8" opacity="0.7"/>
       <line x1="62" y1="55" x2="80" y2="55" stroke="#ccc" strokeWidth="0.8" opacity="0.7"/>
+      {/* Front paws */}
       <ellipse cx="40" cy="86" rx="8" ry="5" fill={fur}/>
       <ellipse cx="60" cy="86" rx="8" ry="5" fill={fur}/>
     </svg>
@@ -88,11 +88,15 @@ const CatSVG: React.FC<CatSVGProps> = ({ fur, innerEar, nose, crown, small }) =>
 
 const DeskSVG: React.FC<{ computerOn?: boolean }> = ({ computerOn }) => (
   <svg viewBox="0 0 120 80" style={{ width: '100px', height: '67px' }} overflow="visible">
+    {/* Desk surface */}
     <rect x="5" y="30" width="110" height="8" rx="2" fill="#8B6914" stroke="#6B4F12" strokeWidth="1"/>
+    {/* Desk legs */}
     <rect x="10" y="38" width="8" height="36" rx="1" fill="#7A5C10"/>
     <rect x="102" y="38" width="8" height="36" rx="1" fill="#7A5C10"/>
+    {/* Monitor */}
     <rect x="38" y="8" width="44" height="28" rx="3" fill="#333" stroke="#555" strokeWidth="1"/>
-    <rect x="41" y="11" width="38" height="22" rx="1" fill={computerOn ? '#0d1f2d' : '#111'}/>
+    <rect x="41" y="11" width="38" height="22" rx="1" fill={computerOn ? '#1a2a3a' : '#111'}/>
+    {computerOn && <rect x="41" y="11" width="38" height="22" rx="1" fill="#0d1f2d"/> }
     {computerOn && (
       <>
         <rect x="43" y="13" width="34" height="2" rx="1" fill="#4a9eff" opacity="0.6"/>
@@ -100,8 +104,10 @@ const DeskSVG: React.FC<{ computerOn?: boolean }> = ({ computerOn }) => (
         <rect x="43" y="21" width="26" height="2" rx="1" fill="#4a9eff" opacity="0.4"/>
       </>
     )}
+    {/* Monitor stand */}
     <rect x="57" y="36" width="6" height="6" fill="#555"/>
     <rect x="50" y="40" width="20" height="4" rx="1" fill="#444"/>
+    {/* Keyboard */}
     <rect x="40" y="43" width="40" height="8" rx="1" fill="#ccc" stroke="#aaa" strokeWidth="0.5"/>
   </svg>
 );
@@ -113,34 +119,42 @@ const App: React.FC = () => {
   const [panelTab,   setPanelTab]   = useState<PanelTab>('task');
   const [taskText,   setTaskText]   = useState('');
   const [history,    setHistory]    = useState<TaskEntry[]>([]);
-  const [uploadName, setUploadName]  = useState<string | null>(null);
+  const [uploadName, setUploadName] = useState<string | null>(null);
   const [uploadContent, setUploadContent] = useState<string>('');
-
   const fileRef = useRef<HTMLInputElement>(null);
-  const dragStartY = useRef<number>(0);
-  const dragStartH = useRef<number>(0);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  const [panelH, setPanelH] = useState(320); // panel height when fully expanded
-  const [liveH,  setLiveH]  = useState(0);   // current height during drag
 
   const [states, setStates] = useState<Record<AgentId, AgentState>>({ 1: 'idle', 2: 'idle', 3: 'idle', 4: 'idle' });
   const timersRef = useRef<Record<AgentId, ReturnType<typeof setTimeout> | null>>({ 1: null, 2: null, 3: null, 4: null });
 
+  // Cleanup on unmount
   useEffect(() => () => {
     (Object.values(timersRef.current) as ReturnType<typeof setTimeout>[]).forEach(t => t && clearTimeout(t));
   }, []);
 
   const runAgentSequence = useCallback((id: AgentId) => {
-    const delay = (ms: number) => new Promise<void>(r => { timersRef.current[id] = setTimeout(r, ms); });
+    const delay = (ms: number) => new Promise<void>(r => {
+      timersRef.current[id] = setTimeout(r, ms);
+    });
+
     const seq = async () => {
-      setStates(s => ({ ...s, [id]: 'walk-to-boss' })); await delay(900);
-      setStates(s => ({ ...s, [id]: 'at-boss' }));      await delay(PAUSE_MS);
-      setStates(s => ({ ...s, [id]: 'walk-to-desk' })); await delay(900);
-      setStates(s => ({ ...s, [id]: 'work' }));          await delay(WORK_MS);
-      setStates(s => ({ ...s, [id]: 'report' }));       await delay(REPORT_MS);
+      setStates(s => ({ ...s, [id]: 'walk-to-boss' }));
+      await delay(900);
+
+      setStates(s => ({ ...s, [id]: 'at-boss' }));
+      await delay(PAUSE_MS);
+
+      setStates(s => ({ ...s, [id]: 'walk-to-desk' }));
+      await delay(900);
+
+      setStates(s => ({ ...s, [id]: 'work' }));
+      await delay(WORK_MS);
+
+      setStates(s => ({ ...s, [id]: 'report' }));
+      await delay(REPORT_MS);
+
       setStates(s => ({ ...s, [id]: 'done' }));
     };
+
     seq();
   }, []);
 
@@ -150,7 +164,13 @@ const App: React.FC = () => {
     setHistory(h => [entry, ...h]);
     setTaskText('');
     if (fileRef.current) fileRef.current.value = '';
-    ([1, 2, 3, 4] as AgentId[]).forEach((id, i) => setTimeout(() => runAgentSequence(id), i * 250));
+
+    const agents: AgentId[] = [1, 2, 3, 4];
+    // Stagger agents slightly
+    agents.forEach((id, i) => {
+      const baseDelay = i * 250;
+      setTimeout(() => runAgentSequence(id), baseDelay);
+    });
   }, [taskText, runAgentSequence]);
 
   const resetAll = useCallback(() => {
@@ -168,69 +188,63 @@ const App: React.FC = () => {
     reader.readAsText(file);
   };
 
-  // ── Drag handlers ──────────────────────────────────────────────────────────
-  const onDragStart = (e: React.TouchEvent | React.MouseEvent) => {
-    dragStartY.current = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    dragStartH.current = liveH || panelH;
-  };
-  const onDragMove = (e: React.TouchEvent | React.MouseEvent) => {
-    const dy = dragStartY.current - ('touches' in e ? e.touches[0].clientY : e.clientY);
-    setLiveH(Math.max(0, Math.min(dragStartH.current + dy, panelH)));
-  };
-  const onDragEnd = () => {
-    if (liveH < panelH * 0.4) { setLiveH(0); setPanelOpen(false); }
-    else { setLiveH(panelH); setPanelOpen(true); }
+  // Agent pixel positions (viewport units)
+  const agentPos: Record<AgentId, { left: string; top: string }> = {
+    1: { left: AGENTS[1].deskX, top: AGENTS[1].deskY },
+    2: { left: AGENTS[2].deskX, top: AGENTS[2].deskY },
+    3: { left: AGENTS[3].deskX, top: AGENTS[3].deskY },
+    4: { left: AGENTS[4].deskX, top: AGENTS[4].deskY },
   };
 
-  // Close on backdrop click
-  const closePanel = () => { setLiveH(0); setPanelOpen(false); };
-
-  // Sync liveH when panel opens/closes via FAB
-  useEffect(() => {
-    if (panelOpen && liveH === 0) setLiveH(panelH);
-  }, [panelOpen]);
-
-  // ── Positions (with agent-2/4 moved up) ──────────────────────────────────
-  const bossX = '50%'; const bossY = '24%';
-
-  // Agents sit at their desk, report when at-boss, etc.
-  const getAgentPos = (id: AgentId, st: AgentState) => {
-    const d = AGENTS[id];
-    if (st === 'idle' || st === 'done') return { l: d.deskX, t: d.deskY };
-    if (st === 'work') return { l: d.deskX, t: d.deskY };
-    if (st === 'walk-to-boss' || st === 'at-boss' || st === 'walk-to-desk') {
-      // Midpoint between desk and boss
-      const bossL = 50, bossT = 24;
-      const deskL = parseFloat(d.deskX);
-      const deskT = parseFloat(d.deskY);
-      const midL = (bossL + deskL) / 2;
-      const midT = (bossT + deskT) / 2;
-      return { l: `${midL}%`, t: `${midT}%` };
-    }
-    return { l: d.deskX, t: d.deskY };
-  };
-
-  const isWalking   = (st: AgentState) => st === 'walk-to-boss' || st === 'walk-to-desk';
-  const isWorking   = (st: AgentState) => st === 'work';
+  // Walking = non-idle, non-done states
+  const isWalking = (st: AgentState) => st === 'walk-to-boss' || st === 'walk-to-desk';
+  const isWorking = (st: AgentState) => st === 'work';
   const isReporting = (st: AgentState) => st === 'report';
-  const isDone      = (st: AgentState) => st === 'done';
-  const isAtBoss    = (st: AgentState) => st === 'at-boss';
-  const isBossActive = () => [1,2,3,4].some(id => isAtBoss(states[id as AgentId]));
+  const isAtBoss = (st: AgentState) => st === 'at-boss';
+  const isDone = (st: AgentState) => st === 'done';
+
+  // Determine visual position for each agent based on state
+  const getAgentLeft = (id: AgentId, st: AgentState): string => {
+    if (st === 'walk-to-boss' || st === 'at-boss') return BOSS_POS.left;
+    return agentPos[id].left;
+  };
+  const getAgentTop = (id: AgentId, st: AgentState): string => {
+    if (st === 'walk-to-boss' || st === 'at-boss') return BOSS_POS.top;
+    return agentPos[id].top;
+  };
+
+  const STATE_COLORS: Record<AgentState, string> = {
+    idle: '#aaa', 'walk-to-boss': '#60a5fa', 'at-boss': '#f59e0b',
+    'walk-to-desk': '#60a5fa', work: '#34d399', report: '#a78bfa', done: '#10b981',
+  };
+
+  const STATE_ICONS: Record<AgentState, string> = {
+    idle: '💤', 'walk-to-boss': '🚶', 'at-boss': '🗣️',
+    'walk-to-desk': '🚶', work: '⌨️', report: '📋', done: '✅',
+  };
 
   return (
     <div className="app-root">
 
       {/* ── Office Scene ── */}
       <div className="scene">
+        {/* Floor */}
         <div className="floor" />
+        {/* Rug */}
         <div className="rug" />
+        {/* Wall decorations */}
         <div className="wall-frame wall-frame-1"><div className="frame-inner">📋</div></div>
         <div className="wall-frame wall-frame-2"><div className="frame-inner">📅</div></div>
         <div className="wall-frame wall-frame-3"><div className="frame-inner">🏆</div></div>
 
-        {/* Boss */}
-        <div className={`cat-entity boss-cat ${isBossActive() ? 'boss-active' : ''}`} style={{ left: bossX, top: bossY }}>
-          <div className="cat-sprite"><CatSVG fur="#F5A623" innerEar="#FFD0A0" nose="#FF6B6B" crown /></div>
+        {/* Boss cat */}
+        <div
+          className={`cat-entity boss-cat ${isAtBoss(states[1]||'idle')||isAtBoss(states[2]||'idle')||isAtBoss(states[3]||'idle')||isAtBoss(states[4]||'idle') ? 'boss-active' : ''}`}
+          style={{ left: BOSS_POS.left, top: BOSS_POS.top }}
+        >
+          <div className="cat-sprite">
+            <CatSVG fur="#F5A623" innerEar="#FFD0A0" nose="#FF6B6B" crown />
+          </div>
           <div className="cat-label boss-label">🐱 猫老板</div>
         </div>
 
@@ -238,14 +252,19 @@ const App: React.FC = () => {
         {([1, 2, 3, 4] as AgentId[]).map(id => {
           const cfg = AGENTS[id];
           const st  = states[id];
-          const pos = getAgentPos(id, st);
           return (
             <div
               key={id}
               className={`cat-entity agent-cat agent-${id} ${isWalking(st) ? 'walking' : ''} ${isWorking(st) ? 'working' : ''} ${isReporting(st) ? 'reporting' : ''} ${isDone(st) ? 'done' : ''}`}
-              style={{ left: pos.l, top: pos.t, transition: `left 0.9s cubic-bezier(0.4,0,0.2,1), top 0.9s cubic-bezier(0.4,0,0.2,1)` }}
+              style={{
+                left: getAgentLeft(id, st),
+                top:  getAgentTop(id, st),
+                transition: `left 0.9s cubic-bezier(0.4,0,0.2,1), top 0.9s cubic-bezier(0.4,0,0.2,1)`,
+              }}
             >
-              <div className="cat-sprite"><CatSVG fur={cfg.fur} innerEar={cfg.innerEar} nose={cfg.nose} small /></div>
+              <div className="cat-sprite">
+                <CatSVG fur={cfg.fur} innerEar={cfg.innerEar} nose={cfg.nose} small />
+              </div>
               <div className="cat-label">{cfg.name}</div>
             </div>
           );
@@ -253,104 +272,100 @@ const App: React.FC = () => {
 
         {/* Desks */}
         {([1, 2] as AgentId[]).map(id => (
-          <div key={`dl-${id}`} className="desk-entity" style={{ left: AGENTS[id].deskX, top: AGENTS[id].deskY }}>
+          <div key={`desk-left-${id}`} className="desk-entity" style={{ left: AGENTS[id].deskX, top: AGENTS[id].deskY }}>
             <DeskSVG computerOn={isWorking(states[id])} />
           </div>
         ))}
         {([3, 4] as AgentId[]).map(id => (
-          <div key={`dr-${id}`} className="desk-entity" style={{ left: AGENTS[id].deskX, top: AGENTS[id].deskY }}>
+          <div key={`desk-right-${id}`} className="desk-entity" style={{ left: AGENTS[id].deskX, top: AGENTS[id].deskY }}>
             <DeskSVG computerOn={isWorking(states[id])} />
           </div>
         ))}
+
+        {/* Walk path indicator (subtle dotted line) */}
+        <svg className="walk-path-svg" viewBox="0 0 100 100" preserveAspectRatio="none" overflow="visible">
+          <defs>
+            <marker id="arrowhead" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto">
+              <polygon points="0 0, 4 2, 0 4" fill="#fff" opacity="0.3"/>
+            </marker>
+          </defs>
+        </svg>
       </div>
 
-      {/* ── Backdrop (click to close) ── */}
-      {panelOpen && <div className="panel-backdrop" onClick={closePanel} />}
-
-      {/* ── Bottom Sheet Panel ── */}
-      <div
-        ref={panelRef}
-        className={`bottom-panel ${panelOpen ? 'panel-visible' : ''}`}
-        style={{ height: panelOpen ? (liveH || panelH) : 0 }}
-      >
-        {/* Drag handle */}
-        <div
-          className="panel-handle"
-          onPointerDown={onDragStart}
-          onPointerMove={onDragMove}
-          onPointerUp={onDragEnd}
-          onClick={() => { if (panelOpen) { setLiveH(0); setPanelOpen(false); } else { setLiveH(panelH); setPanelOpen(true); } }}
-        >
-          <div className="handle-bar" />
-        </div>
-
-        {/* Panel header */}
-        <div className="panel-hdr">
-          <div className="ph-left">
-            <div className="ph-title">🐱 Marvis Office</div>
-            <div className="ph-sub">Multi-Agent · 任务编排</div>
-          </div>
-          <button className="panel-close-btn" onClick={closePanel}>✕</button>
-        </div>
-
-        {/* Tabs */}
-        <div className="panel-tabs">
-          <button className={`pt-tab ${panelTab === 'task' ? 'active' : ''}`} onClick={() => setPanelTab('task')}>📌 任务</button>
-          <button className={`pt-tab ${panelTab === 'history' ? 'active' : ''}`} onClick={() => setPanelTab('history')}>
-            📜 历史{history.length > 0 && <span className="tab-badge">{history.length}</span>}
+      {/* ── Collapsible Panel ── */}
+      <div className={'panel-wrapper' + (panelOpen ? ' panel-open' : '')}>
+        <div className="panel-toggle">
+          <button className="pt-btn" onClick={() => setPanelOpen(o => !o)}>
+            {panelOpen ? '▶' : '◀'} 任务
           </button>
         </div>
 
-        {/* Scrollable content */}
-        <div className="panel-scroll">
-          {panelTab === 'task' && (
-            <div className="cp-section">
-              <label className="cp-label">📋 任务描述</label>
-              <textarea className="cp-textarea" placeholder="输入任务内容，例如：写一份市场调研报告…" value={taskText} onChange={e => setTaskText(e.target.value)} rows={4} />
-              <label className="cp-label" style={{ marginTop: '12px' }}>📎 附件（可选）</label>
-              <div className="cp-file-wrap">
-                <button className="cp-btn-secondary" onClick={() => fileRef.current?.click()}>选择文件</button>
-                <input ref={fileRef} type="file" accept=".txt,.md,.doc,.docx,.pdf" onChange={handleFileChange} style={{ display: 'none' }} />
-                {uploadName && <span className="cp-filename">{uploadName}</span>}
-              </div>
-              {uploadContent && (
-                <div className="cp-preview">
-                  <div className="cp-label">📄 文件预览</div>
-                  <div className="cp-preview-content">{uploadContent.slice(0, 200)}{uploadContent.length > 200 ? '…' : ''}</div>
+        <div className="panel-body">
+          <div className="panel-hdr">
+            <div className="ph-title">🐱 Marvis Office</div>
+            <div className="ph-sub">Multi-Agent · 任务编排</div>
+          </div>
+
+          <div className="panel-tabs">
+            <button className={'pt-tab' + (panelTab === 'task' ? ' active' : '')} onClick={() => setPanelTab('task')}>📌 任务</button>
+            <button className={'pt-tab' + (panelTab === 'history' ? ' active' : '')} onClick={() => setPanelTab('history')}>
+              📜 历史{history.length > 0 && <span className="tab-badge">{history.length}</span>}
+            </button>
+          </div>
+
+          <div className="panel-scroll">
+            {panelTab === 'task' && (
+              <div className="cp-section">
+                <label className="cp-label">📋 任务描述</label>
+                <textarea
+                  className="cp-textarea"
+                  placeholder="输入任务内容，例如：写一份市场调研报告…"
+                  value={taskText}
+                  onChange={e => setTaskText(e.target.value)}
+                  rows={4}
+                />
+
+                <label className="cp-label" style={{ marginTop: '12px' }}>📎 附件（可选）</label>
+                <div className="cp-file-wrap">
+                  <button className="cp-btn-secondary" onClick={() => fileRef.current?.click()}>选择文件</button>
+                  <input ref={fileRef} type="file" accept=".txt,.md,.doc,.docx,.pdf" onChange={handleFileChange} style={{ display: 'none' }} />
+                  {uploadName && <span className="cp-filename">{uploadName}</span>}
                 </div>
-              )}
-              <div className="cp-btn-row">
-                <button className="cp-btn-primary" onClick={sendTask} disabled={taskText.trim() === '' && !uploadName}>🚀 发送任务</button>
+                {uploadContent && (
+                  <div className="cp-preview">
+                    <div className="cp-label">📄 文件预览</div>
+                    <div className="cp-preview-content">{uploadContent.slice(0, 200)}{uploadContent.length > 200 ? '…' : ''}</div>
+                  </div>
+                )}
+
+                <button className="cp-btn-primary" onClick={sendTask} disabled={taskText.trim() === '' && !uploadName}>
+                  🚀 发送任务
+                </button>
                 <button className="cp-btn-secondary" onClick={resetAll}>🔄 重置</button>
               </div>
-            </div>
-          )}
-          {panelTab === 'history' && (
-            <div className="cp-section">
-              {history.length === 0 ? (
-                <div className="cp-empty">暂无任务记录</div>
-              ) : (
-                history.map(entry => (
-                  <div key={entry.id} className="cp-history-item">
-                    <div className="cp-history-ts">{entry.ts}</div>
-                    <div className="cp-history-text">{entry.text}</div>
+            )}
+
+            {panelTab === 'history' && (
+              <div className="cp-section">
+                {history.length === 0 ? (
+                  <div className="cp-empty">暂无任务记录</div>
+                ) : (
+                  <div className="cp-history-list">
+                    {history.map(entry => (
+                      <div key={entry.id} className="cp-history-item">
+                        <div className="cp-history-ts">{entry.ts}</div>
+                        <div className="cp-history-text">{entry.text}</div>
+                      </div>
+                    ))}
                   </div>
-                ))
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── FAB (always visible at bottom-right) ── */}
-      <button
-        className={`fab ${panelOpen ? 'fab-active' : ''}`}
-        onClick={() => { if (panelOpen) closePanel(); else { setLiveH(panelH); setPanelOpen(true); } }}
-      >
-        {panelOpen ? '✕' : '📋'}
-      </button>
-
-      {/* ── Status Grid ── */}
+      {/* ── Status Grid (floating bottom-left) ── */}
       <div className="status-grid">
         {([1, 2, 3, 4] as AgentId[]).map(id => {
           const st = states[id];
