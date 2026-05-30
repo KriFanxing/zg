@@ -311,8 +311,12 @@ body {
   background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
   flex-shrink: 0;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
-.panel-wrapper.panel-open .panel-hdr { display: flex; flex-direction: column; gap: 2px; }
+.panel-hdr-left { display: flex; flex-direction: column; gap: 2px; }
+.panel-wrapper.panel-open .panel-hdr { display: flex; }
 .ph-title { font-size: 15px; font-weight: 800; color: #fff; }
 .ph-sub { font-size: 11px; color: rgba(255,255,255,0.4); }
 

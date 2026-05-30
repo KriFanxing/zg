@@ -302,8 +302,11 @@ const App: React.FC = () => {
 
         <div className="panel-body">
           <div className="panel-hdr">
-            <div className="ph-title">🐱 Marvis Office</div>
-            <div className="ph-sub">Multi-Agent · 任务编排</div>
+            <div className="panel-hdr-left">
+              <div className="ph-title">🐱 Marvis Office</div>
+              <div className="ph-sub">Multi-Agent · 任务编排</div>
+            </div>
+            <button className="panel-close-btn" onClick={() => setPanelOpen(false)}>✕</button>
           </div>
 
           <div className="panel-tabs">
